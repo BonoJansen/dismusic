@@ -43,13 +43,28 @@ class RadioClient {
      * Start playing a station in your voice channel
      * @param {string} resource The MP3 link of your radio channel.
      * @param {object} guild the guild
+     * @param {boolean} volume set the volume of the stream. (max = 1) 
      * @returns {AudioPlayer}
      */
-    async startPlaying(resource, guild) {
+    async startPlaying(resource, guild, volume) {
         const connection = getVoiceConnection(guild.id)
-        const res = createAudioResource(resource, {
-            inputType: StreamType.Arbitrary
-        })
+        let res 
+        if(volume){
+            res = createAudioResource(resource, {
+                inputType: StreamType.Arbitrary,
+                inlineVolume : true
+            })
+            if(volume > 1 || volume <= 0){
+                throw new Error('[ Dismusic Error ] A valid volume value (0.1 - 1) has to be given.')
+            }
+            res.volume.setVolume(volume)
+            
+        } else {
+            res = createAudioResource(resource, {
+                inputType: StreamType.Arbitrary,
+                inlineVolume : false
+            })
+        }
         const player = createAudioPlayer({
             behaviors: {
                 noSubscriber: NoSubscriberBehavior.Play
